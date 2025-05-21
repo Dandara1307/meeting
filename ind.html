@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda de Reuniões</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --vermelho: #b22222;
+      --preto: #000;
+      --branco: #fff;
+      --cinza-claro: #f4f4f4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: var(--cinza-claro);
+      color: var(--preto);
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: var(--branco);
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--vermelho);
+      font-size: 26px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      background-color: var(--vermelho);
+      color: var(--branco);
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #8b1a1a;
+    }
+
+    .top-bar {
+      background: var(--vermelho);
+      color: var(--branco);
+      padding: 10px 50px 10px 20px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--branco);
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .logo {
+      font-size: 40px;
+      color: var(--vermelho);
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 16px;
+      color: #666;
+      border-top: 4px solid var(--vermelho);
+      margin-top: 30px;
+      font-weight: bold;
+    }
+
+    .reuniao-item {
+      background: #ffe5e5;
+      border-left: 5px solid var(--vermelho);
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    .reuniao-item button {
+      width: auto;
+      padding: 6px 10px;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 10px;
+        padding: 15px;
+      }
+      .top-bar {
+        padding: 10px 15px;
+        font-size: 16px;
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="loginScreen">
+    <div class="logo"><i class="fas fa-calendar-check"></i></div>
+    <h2>Login</h2>
+    <label>Email</label>
+    <input type="email" id="loginEmail" />
+    <label>Senha</label>
+    <input type="password" id="loginSenha" />
+    <button onclick="fazerLogin()">Entrar</button>
+    <button onclick="mostrarCadastro()">Não tem conta? Cadastre-se</button>
+  </div>
+
+  <div class="container hidden" id="cadastroScreen">
+    <div class="logo"><i class="fas fa-calendar-plus"></i></div>
+    <h2>Cadastro</h2>
+    <label>Email</label>
+    <input type="email" id="cadEmail" />
+    <label>Senha</label>
+    <input type="password" id="cadSenha" />
+    <select id="tipoUsuario">
+      <option value="participante">Participante</option>
+      <option value="admin">Administrador</option>
+    </select>
+    <button onclick="fazerCadastro()">Cadastrar</button>
+    <button onclick="mostrarLogin()">Voltar para Login</button>
+  </div>
+
+  <div class="top-bar hidden" id="barraApp">
+    <span id="usuarioLogado"></span>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+  </div>
+
+  <div class="container hidden" id="appScreen">
+    <h2>Nova Reunião</h2>
+    <label>Data</label>
+    <input type="date" id="data" />
+    <label>Horário de Início</label>
+    <input type="time" id="inicio" />
+    <label>Horário de Término</label>
+    <input type="time" id="fim" />
+    <label>Participantes</label>
+    <input type="text" id="participantes" placeholder="Separe por vírgulas" />
+    <label>Clientes</label>
+    <input type="text" id="clientes" />
+    <label>Pauta</label>
+    <textarea id="pauta"></textarea>
+    <label>Tempo de alerta (minutos antes)</label>
+    <input type="number" id="alerta" value="10" />
+    <label>Anotações</label>
+    <textarea id="anotacoes"></textarea>
+    <label>Enviar arquivos</label>
+    <input type="file" id="arquivos" />
+    <label>Confirmar presença</label>
+    <select id="confirmar">
+      <option value="sim">Sim</option>
+      <option value="nao">Não</option>
+      <option value="talvez">Talvez</option>
+    </select>
+    <button onclick="cadastrarReuniao()">Cadastrar Reunião</button>
+    <div id="listaReunioes"></div>
+  </div>
+
+  <footer>© 2025 Criado por Dandara Silva</footer>
+
+  <script>
+    let usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
+    let reunioes = JSON.parse(localStorage.getItem("reunioes") || "[]");
+    let usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    const loginScreen = document.getElementById("loginScreen");
+    const cadastroScreen = document.getElementById("cadastroScreen");
+    const appScreen = document.getElementById("appScreen");
+    const barraApp = document.getElementById("barraApp");
+    const usuarioLogadoSpan = document.getElementById("usuarioLogado");
+
+    if (usuarioLogado) {
+      mostrarApp(usuarioLogado);
+    }
+
+    function mostrarCadastro() {
+      loginScreen.classList.add("hidden");
+      cadastroScreen.classList.remove("hidden");
+    }
+
+    function mostrarLogin() {
+      cadastroScreen.classList.add("hidden");
+      loginScreen.classList.remove("hidden");
+    }
+
+    function salvarUsuarios() {
+      localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    }
+
+    function salvarReunioes() {
+      localStorage.setItem("reunioes", JSON.stringify(reunioes));
+    }
+
+    function fazerCadastro() {
+      const email = document.getElementById("cadEmail").value.trim();
+      const senha = document.getElementById("cadSenha").value.trim();
+      const tipo = document.getElementById("tipoUsuario").value;
+
+      if (!email || !senha) {
+        alert("Preencha todos os campos");
+        return;
+      }
+
+      if (usuarios.find((u) => u.email === email)) {
+        alert("Usuário já existe");
+        return;
+      }
+
+      usuarios.push({ email, senha, tipo });
+      salvarUsuarios();
+      alert("Cadastro realizado com sucesso!");
+      mostrarLogin();
+    }
+
+    function fazerLogin() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const senha = document.getElementById("loginSenha").value.trim();
+      const user = usuarios.find((u) => u.email === email && u.senha === senha);
+
+      if (!user) {
+        alert("Usuário ou senha inválidos");
+        return;
+      }
+
+      usuarioLogado = user;
+      localStorage.setItem("usuarioLogado", JSON.stringify(user));
+      mostrarApp(user);
+    }
+
+    function mostrarApp(user) {
+      loginScreen.classList.add("hidden");
+      cadastroScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
+      barraApp.classList.remove("hidden");
+
+      usuarioLogadoSpan.textContent = `${user.email} (${user.tipo})`;
+      mostrarReunioes();
+    }
+
+    function logout() {
+      localStorage.removeItem("usuarioLogado");
+      usuarioLogado = null;
+      appScreen.classList.add("hidden");
+      barraApp.classList.add("hidden");
+      loginScreen.classList.remove("hidden");
+      document.getElementById("loginEmail").value = "";
+      document.getElementById("loginSenha").value = "";
+    }
+
+    function cadastrarReuniao() {
+      if (!usuarioLogado) {
+        alert("Você precisa estar logado para cadastrar reuniões.");
+        return;
+      }
+
+      const nova = {
+        data: document.getElementById("data").value,
+        inicio: document.getElementById("inicio").value,
+        fim: document.getElementById("fim").value,
+        participantes: document.getElementById("participantes").value.trim(),
+        clientes: document.getElementById("clientes").value.trim(),
+        pauta: document.getElementById("pauta").value.trim(),
+        alerta: document.getElementById("alerta").value,
+        anotacoes: document.getElementById("anotacoes").value.trim(),
+        confirmar: document.getElementById("confirmar").value,
+        usuario: usuarioLogado.email
+      };
+
+      reunioes.push(nova);
+      salvarReunioes();
+      mostrarReunioes();
+      alert("Reunião cadastrada!");
+    }
+
+    function mostrarReunioes() {
+      const lista = document.getElementById("listaReunioes");
+      lista.innerHTML = "";
+      reunioes
+        .filter((r) => r.usuario === usuarioLogado.email)
+        .forEach((r, i) => {
+          const div = document.createElement("div");
+          div.className = "reuniao-item";
+          div.innerHTML = `
+            <strong>Data:</strong> ${r.data}<br/>
+            <strong>Início:</strong> ${r.inicio}<br/>
+            <strong>Fim:</strong> ${r.fim}<br/>
+            <strong>Participantes:</strong> ${r.participantes}<br/>
+            <strong>Clientes:</strong> ${r.clientes}<br/>
+            <strong>Pauta:</strong> ${r.pauta}<br/>
+            <strong>Alerta:</strong> ${r.alerta} minutos antes<br/>
+            <strong>Anotações:</strong> ${r.anotacoes}<br/>
+            <strong>Presença:</strong> ${r.confirmar}<br/>
+            <button onclick="excluirReuniao(${i})">Excluir</button>
+          `;
+          lista.appendChild(div);
+        });
+    }
+
+    function excluirReuniao(index) {
+      reunioes.splice(index, 1);
+      salvarReunioes();
+      mostrarReunioes();
+    }
+  </script>
+</body>
+</html>
